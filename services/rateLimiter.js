@@ -8,12 +8,16 @@ exports.checkLimit = async ({ clientId, ip, route }) => {
   const configKey = `config:${identifier}`;
   const config = await redis.hgetall(configKey);
 
-  const limit = config.limit ? parseInt(config.limit) : DEFAULT_LIMIT;
-  const window = config.window ? parseInt(config.window) : DEFAULT_WINDOW;
+  const limit = Number.isFinite(parseInt(config.limit))
+    ? parseInt(config.limit)
+    : DEFAULT_LIMIT;
+  const window = Number.isFinite(parseInt(config.window))
+    ? parseInt(config.window)
+    : DEFAULT_WINDOW;
 
   const key = `rate:${identifier}`;
   const requests = await redis.incr(key);
-
+  
   if (requests === 1) {
     await redis.expire(key, window);
   }
@@ -31,7 +35,7 @@ exports.checkLimit = async ({ clientId, ip, route }) => {
 
   return {
     allowed: true,
-    remaining: limit - requests,
+    remaining: limit - requests >= 0 ? limit - requests : 0,
     retryAfter: 0,
     limit,
     window,

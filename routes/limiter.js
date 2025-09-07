@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const auth = require('../middleware/auth');
 const limiterController = require("../controllers/limiterController");
 
 
@@ -8,7 +9,7 @@ router.get("/", (req, res) => {
 });
 
 
-router.post("/check-limit", limiterController.checkLimit);
-router.post("/set-limit", limiterController.setLimit);
+router.post("/check-limit",auth , limiterController.checkLimit);
+router.post("/set-limit", auth , limiterController.setLimit);
 
 module.exports = router;

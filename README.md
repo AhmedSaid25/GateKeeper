@@ -47,9 +47,9 @@ The server will be running on `http://localhost:3000` by default.
 
   - **GET /**: Returns a message indicating that "GateKeeper is running".
 
-- **Rate Limit Check**
-  - **POST /rate-limit/check**: Checks the rate limit for a client based on their ID or route.
-  - **POST /rate-limit/set**: Sets custom limits for a specific client ID or route.
+- **Rate Limit Check** (Requires API key)
+  - **POST /check-limit**: Checks the rate limit for a client based on their ID or route.
+  - **POST /set-limit**: Sets custom limits for a specific client ID or route.
 
 ### API Documentation
 
@@ -63,13 +63,17 @@ The server will be running on `http://localhost:3000` by default.
 
 #### 2. Rate Limit Check
 
-- **POST /rate-limit/check**  
+- **POST /check-limit**  
+  **Headers:**
+  ```
+  Authorization: your-generated-api-key
+  ```
   **Body:**
   ```json
   {
     "clientId": "client123",
-    "ip": "192.168.1.1", // clientId only or IP only or both
-    "route": "/api/resource" // optional
+    "ip": "192.168.1.1",
+    "route": "/api/resource"
   }
   ```
   **Response:**
@@ -85,12 +89,16 @@ The server will be running on `http://localhost:3000` by default.
 
 #### 3. Set Custom Limit
 
-- **POST /rate-limit/set**  
+- **POST /set-limit**  
+  **Headers:**
+  ```
+  Authorization: your-generated-api-key
+  ```
   **Body:**
   ```json
   {
     "clientId": "client123",
-    "route": "/api/resource", // optional
+    "route": "/api/resource",
     "limit": 20,
     "window": 120
   }
