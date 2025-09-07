@@ -1,9 +1,11 @@
 const express = require("express");
 const limiterRoutes = require("./routes/limiter");
 const errorHandler = require("./middleware/errorHandler");
+const cors = require("cors");
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 // Routes
 app.use("/", limiterRoutes);
