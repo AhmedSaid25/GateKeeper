@@ -2,7 +2,7 @@ const redis = require("./redisClient");
 const { DEFAULT_LIMIT, DEFAULT_WINDOW } = require("../config/settings");
 
 exports.checkLimit = async ({ clientId, ip, route }) => {
-  let identifier = clientId || ip;
+  let identifier = clientId && ip ? `${clientId}:${ip}` : clientId || ip;
   if (route) identifier += `:${route}`;
 
   const configKey = `config:${identifier}`;
@@ -25,7 +25,7 @@ exports.checkLimit = async ({ clientId, ip, route }) => {
       retryAfter: ttl,
       remaining: 0,
       limit,
-      window
+      window,
     };
   }
 
@@ -34,7 +34,7 @@ exports.checkLimit = async ({ clientId, ip, route }) => {
     remaining: limit - requests,
     retryAfter: 0,
     limit,
-    window
+    window,
   };
 };
 

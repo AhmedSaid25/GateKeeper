@@ -3,7 +3,7 @@ const rateLimiter = require("../services/rateLimiter");
 exports.checkLimit = async (req, res, next) => {
   try {
     const { clientId, ip, route } = req.body;
-    if (!ip) return res.status(400).json({ error: "ip is required" });
+    if (!ip && !clientId) return res.status(400).json({ error: "Either clientId or ip is required" });
 
     const result = await rateLimiter.checkLimit({ clientId, ip, route });
     res.json(result);
