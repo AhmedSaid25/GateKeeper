@@ -1,20 +1,17 @@
 const express = require("express");
-const Redis = require("ioredis");
+const limiterRoutes = require("./routes/limiter");
+const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
-const redis = new Redis(); 
+app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("🚦 GateKeeper is running!");
-});
+// Routes
+app.use("/", limiterRoutes);
 
-app.get("/test-redis", async (req, res) => {
-  await redis.set("visits", (parseInt(await redis.get("visits")) || 0) + 1);
-  const visits = await redis.get("visits");
-  res.send(`Redis counter: ${visits}`);
-});
+// Error handler
+app.use(errorHandler);
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚦 GateKeeper running on port ${PORT}`);
 });
