@@ -2,8 +2,11 @@ const redis = require("./redisClient");
 const { DEFAULT_LIMIT, DEFAULT_WINDOW } = require("../config/settings");
 
 exports.checkLimit = async ({ clientId, ip, route }) => {
-  let identifier = clientId && ip ? `${clientId}:${ip}` : clientId || ip;
-  if (route) identifier += `:${route}`;
+  let identifier;
+  if (clientId && route) identifier = `client:${clientId}:route:${route}`;
+  else if (clientId) identifier = `client:${clientId}`;
+  else identifier = `ip:${ip}`;
+
 
   const configKey = `config:${identifier}`;
   const config = await redis.hgetall(configKey);

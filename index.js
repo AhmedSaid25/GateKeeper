@@ -4,6 +4,7 @@ const registerRoutes = require("./routes/register");
 const errorHandler = require("./middleware/errorHandler");
 const cors = require("cors");
 const { sequelize } = require("./models/Client");
+const { PORT } = require("./config/settings");
 
 const app = express();
 app.use(express.json());
@@ -16,9 +17,15 @@ app.use("/register", registerRoutes);
 // Error handler
 app.use(errorHandler);
 
-sequelize.sync().then(() => {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-    console.log(`🚦 GateKeeper running on port ${PORT}`);
+// Start server
+sequelize
+  .sync()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`🚦 GateKeeper running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("❌ Failed to sync database:", err);
+    process.exit(1);
   });
-});
