@@ -53,13 +53,7 @@ const Client = sequelize.define(
     },
   },
   {
-    hooks: {
-      beforeCreate: async (client) => {
-        if (client.apiKey) {
-          client.apiKeyHash = await bcrypt.hash(client.apiKey, BCRYPT_ROUNDS);
-        }
-      },
-    },
+    hooks: {},
   },
 );
 
