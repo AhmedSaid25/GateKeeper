@@ -129,6 +129,77 @@ You must have Redis and Postgres running (in the cluster or elsewhere) and point
 
 ---
 
+## How to test Docker and Kubernetes
+
+### Testing the workflow (CI)
+
+1. **Push or open a PR** to `main` or `master`. GitHub Actions runs the **Tests** workflow (`.github/workflows/test.yml`).
+2. **Check the run:** Repo → **Actions** → select the run → open the **test** job. It uses Redis and Postgres service containers and runs `npm test` with the same env as below.
+3. **Same locally:** To mimic CI locally, set the same env and run tests (Redis and Postgres must be running, e.g. via Docker):
+   ```bash
+   REDIS_URL=redis://localhost:6379 DB_DIALECT=postgres DB_HOST=localhost DB_PORT=5432 DB_NAME=postgres DB_USER=postgres DB_PASSWORD=postgres npm test
+   ```
+
+### Testing Docker
+
+1. **Build and run the stack:**
+   ```bash
+   docker compose up --build
+   ```
+2. **Check the API:**
+   - Health: `curl http://localhost:3000/`
+   - Register: `curl -X POST http://localhost:3000/register -H "Content-Type: application/json" -d '{"clientName":"Test","email":"test@example.com"}'`
+   - Use the returned `apiKey` in the `Authorization` header for `/check-limit` and `/set-limit`.
+3. **Stop:** `docker compose down` (add `-v` to remove the Postgres volume).
+
+### Testing Kubernetes (minikube or kind)
+
+1. **Start a local cluster:**
+   - **minikube:** `minikube start`
+   - **kind:** `kind create cluster`
+2. **Run Redis and Postgres** (so the API can connect). Example with plain manifests or Helm; minimal example:
+   ```bash
+   # Optional: run Redis + Postgres in the cluster (example with simple Deployments/Services)
+   kubectl apply -f - <<EOF
+   apiVersion: v1
+   kind: Pod
+   metadata:
+     name: redis
+     labels: { app: redis }
+   spec:
+     containers:
+       - name: redis
+         image: redis:7-alpine
+         ports: [ { containerPort: 6379 } ]
+   ---
+   apiVersion: v1
+   kind: Service
+   metadata:
+     name: redis
+   spec:
+     selector: { app: redis }
+     ports: [ { port: 6379, targetPort: 6379 } ]
+   EOF
+   ```
+   (You’d add a similar Postgres Pod/Service or use Helm/operators; the `k8s/` manifests assume Redis and Postgres exist and are reachable at the names in the ConfigMap.)
+3. **Build the image** so the cluster can use it:
+   - **minikube:** `eval $(minikube docker-env)` then `docker build -t gatekeeper:latest .`
+   - **kind:** `docker build -t gatekeeper:latest .` then `kind load docker-image gatekeeper:latest`
+4. **Apply GateKeeper manifests:**
+   ```bash
+   kubectl apply -f k8s/configmap.yaml
+   kubectl apply -f k8s/secret.yaml
+   kubectl apply -f k8s/deployment.yaml
+   kubectl apply -f k8s/service.yaml
+   ```
+5. **Check the API:**
+   - **minikube:** `minikube service gatekeeper` (opens URL) or `curl http://$(minikube ip):30300/`
+   - **kind:** `kubectl port-forward service/gatekeeper 3000:3000` then `curl http://localhost:3000/` (or use NodePort 30300 and the node IP).
+
+Ensure `k8s/configmap.yaml` and `k8s/secret.yaml` point to your Redis and Postgres (service names or host/port). The default ConfigMap uses `REDIS_URL=redis://redis:6379` and `DB_HOST=postgres`; those hostnames only work if Redis and Postgres are in the same cluster with those service names.
+
+---
+
 ## API Endpoints
 
 - **GET /** — Health check (no auth).
