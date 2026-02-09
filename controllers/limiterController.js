@@ -2,7 +2,10 @@ const rateLimiter = require("../services/rateLimiter");
 
 exports.checkLimit = async (req, res, next) => {
   try {
-    const { clientId, ip, route } = req.body;
+    // Use authenticated client when present; otherwise require clientId or ip in body
+    const clientId = req.body.clientId ?? req.client?.id;
+    const ip = req.body.ip ?? req.ip ?? req.connection?.remoteAddress;
+    const route = req.body.route;
     if (!ip && !clientId)
       return res
         .status(400)

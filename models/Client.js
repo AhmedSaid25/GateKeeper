@@ -1,17 +1,27 @@
 const { Sequelize, DataTypes } = require("sequelize");
 const bcrypt = require("bcrypt");
-const { DB_DIALECT, DB_STORAGE, BCRYPT_ROUNDS } = require("../config/settings");
+const {
+  DB_DIALECT,
+  DB_STORAGE,
+  DB_HOST,
+  DB_PORT,
+  DB_NAME,
+  DB_USER,
+  DB_PASSWORD,
+  BCRYPT_ROUNDS,
+} = require("../config/settings");
 
 let sequelize;
 
 if (DB_DIALECT === "postgres") {
+  // All from config (which reads .env). "password authentication failed" = Postgres rejected these credentials.
   sequelize = new Sequelize({
     dialect: "postgres",
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    database: process.env.DB_NAME,
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
+    host: DB_HOST,
+    port: DB_PORT,
+    database: DB_NAME,
+    username: DB_USER,
+    password: DB_PASSWORD,
   });
 } else {
   sequelize = new Sequelize({ dialect: "sqlite", storage: DB_STORAGE });

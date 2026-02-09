@@ -4,7 +4,7 @@ module.exports = {
   PORT: process.env.PORT || 3000,
   NODE_ENV: process.env.NODE_ENV || "development",
 
-  // Database
+  // Database (all from .env; for tests use Postgres and set DB_* in .env to match your test Postgres)
   DB_DIALECT: process.env.DB_DIALECT || "sqlite",
   DB_STORAGE: process.env.DB_STORAGE || "./gatekeeper.sqlite",
   DB_HOST: process.env.DB_HOST,
